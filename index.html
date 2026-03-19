@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心電圖異常風險自我評估</title>
+<style>
+body {
+    font-family: "Noto Sans TC", sans-serif;
+    background: #f4f7fb;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+}
+.card {
+    background: white;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+h1 {
+    text-align: center;
+    color: #2c7be5;
+}
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #eaf2ff;
+    cursor: pointer;
+    font-size: 16px;
+}
+button:hover {
+    background: #d0e2ff;
+}
+.result {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+}
+.low { color: #28a745; }
+.mid { color: #f0a500; }
+.high { color: #e55353; }
+.progress {
+    height: 6px;
+    background: #ddd;
+    border-radius: 3px;
+    margin-bottom: 15px;
+}
+.progress-bar {
+    height: 6px;
+    width: 0%;
+    background: #2c7be5;
+    border-radius: 3px;
+    transition: width 0.3s;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🩺 心電圖異常<br>反直覺風險測驗</h1>
+<div class="progress">
+<div class="progress-bar" id="progress"></div>
+</div>
+<div id="quiz"></div>
+<div id="result" class="card result" style="display:none;"></div>
+</div>
+<script>
+const questions = [
+{
+q: "你平常沒有胸痛，所以心臟一定健康？",
+options: ["✔ 是的", "❗ 不一定"],
+score: [0, 2]
+},
+{
+q: "健檢前熬夜，但應該不影響心電圖？",
+options: ["✔ 應該沒差", "❗ 其實會影響"],
+score: [2, 0]
+},
+{
+q: "有在運動，所以出現異常一定不正常？",
+options: ["✔ 對", "❗ 不一定"],
+score: [2, 0]
+},
+{
+q: "壓力大只是心理問題，不會影響心電圖？",
+options: ["✔ 對", "❗ 其實會影響"],
+score: [2, 0]
+},
+{
+q: "年輕女性出現T波倒置一定有病？",
+options: ["✔ 一定有問題", "❗ 可能是正常"],
+score: [2, 0]
+},
+{
+q: "沒有家族史，就不用擔心心臟問題？",
+options: ["✔ 是", "❗ 不完全正確"],
+score: [2, 0]
+}
+];
+let current = 0;
+let totalScore = 0;
+function renderQuestion() {
+    const quiz = document.getElementById("quiz");
+    const progress = document.getElementById("progress");
+    progress.style.width = ((current / questions.length) * 100) + "%";
+    if (current >= questions.length) {
+        showResult();
+        return;
+    }
+    const q = questions[current];
+    quiz.innerHTML = `
+    <div class="card">
+        <h3>Q${current + 1}. ${q.q}</h3>
+        ${q.options.map((opt, i) =>
+            `<button onclick="answer(${q.score[i]})">${opt}</button>`
+        ).join("")}
+    </div>
+    `;
+}
+function answer(score) {
+    totalScore += score;
+    current++;
+    renderQuestion();
+}
+function showResult() {
+    document.getElementById("quiz").style.display = "none";
+    const result = document.getElementById("result");
+    result.style.display = "block";
+    let text = "";
+    let className = "";
+    if (totalScore <= 3) {
+        text = "🟢 低風險：多半為正常變異，建議定期追蹤";
+        className = "low";
+    } else if (totalScore <= 7) {
+        text = "🟡 中風險：建議評估生活型態與壓力";
+        className = "mid";
+    } else {
+        text = "🔴 高風險：建議進一步心臟檢查";
+        className = "high";
+    }
+    result.innerHTML = `
+    <div class="${className}">
+        ${text}
+    </div>
+    <p style="font-size:14px;margin-top:10px;">
+    ⚠️ 本測驗僅供教育用途，如有症狀請就醫
+    </p>
+    <button onclick="restart()" style="margin-top:16px;background:#eaf2ff">🔄 重新測驗</button>
+    `;
+}
+function restart() {
+    current = 0;
+    totalScore = 0;
+    document.getElementById("result").style.display = "none";
+    document.getElementById("quiz").style.display = "block";
+    renderQuestion();
+}
+renderQuestion();
+</script>
+</body>
+</html>
